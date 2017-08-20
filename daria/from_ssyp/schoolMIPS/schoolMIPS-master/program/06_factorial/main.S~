@@ -1,0 +1,11 @@
+        .text
+
+init:   li      $a0, 1          ## x = 1
+        li      $v0, 2          ## calculation result reset
+        li      $t0, 3          ## i = 1
+        li      $t1, 1  
+
+L:      addiu   $t0, 1          ## i++
+       /* mul     $a0, $a0, $t0   ## x *= i
+        move    $v0, $a0        ## return x
+        b       L */              ## goto L

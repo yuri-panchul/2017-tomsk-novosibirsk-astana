@@ -1,0 +1,18 @@
+
+program.elf:     file format elf32-tradlittlemips
+
+
+Disassembly of section .text:
+
+00000000 <.text>:
+   0:	24040001 	li	a0,1
+   4:	24020002 	li	v0,2
+   8:	24080003 	li	t0,3
+   c:	24090001 	li	t1,1
+
+00000010 <L>:
+  10:	25080001 	addiu	t0,t0,1
+  14:	70882002 	mul	a0,a0,t0
+  18:	00801025 	move	v0,a0
+  1c:	1000fffc 	b	10 <L>
+  20:	00000000 	nop
