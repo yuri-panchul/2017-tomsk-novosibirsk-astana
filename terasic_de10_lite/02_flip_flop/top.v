@@ -14,7 +14,7 @@
 //
 //----------------------------------------------------------------------------
 
-module top_dff_wo_reset_wo_enable_key_clock
+module top//_dff_wo_reset_wo_enable_key_clock
 (
     input  [1:0] key,  // Кнопки
     output [1:0] led   // Светодиоды
@@ -121,13 +121,13 @@ endmodule
 
 //----------------------------------------------------------------------------
 //
-//  Exercise 2.4. D-Flip-Flop with Reset and Enable; clock source is 'clock' with clock division to ~1Hz
+//  Exercise 2.4. D-Flip-Flop with Reset and Enable; clock source is counter bit 
 //
-//  Упражнение 2.4. Триггер с Reset и Enable, источник clock - 'clock' с понижением частоты до ~1Гц
+//  Упражнение 2.4. Триггер с Reset и Enable, источник clock - бит счетчика
 //
 //----------------------------------------------------------------------------
 
-module top //_dff_w_reset_w_enable_clock_divider
+module top_dff_w_reset_w_enable_clock_counter
 (
     input  clock,
     input  [1:0] key,  // Кнопки
@@ -140,14 +140,14 @@ module top //_dff_w_reset_w_enable_clock_divider
     wire reset_n = sw [0];
     wire enable  = sw [1];
 
-    // Divide clock by 2^25
-    reg [24:0] counter;
+    // Divide clock by 2^27
+    reg [26:0] counter;
     always @(posedge clock or negedge reset_n)
         if (!reset_n)
             counter <= 0;
         else
             counter <= counter + 1;
-    global g (.in (counter[24]), .out (one_hz_clk));
+    global g (.in (counter[26]), .out (one_hz_clk));
 
     // Internal state
     // Внутреннее состояние D-триггера
@@ -165,5 +165,58 @@ module top //_dff_w_reset_w_enable_clock_divider
     assign led [1] = q;
     assign led [2] = reset_n;
     assign led [3] = enable;
+
+endmodule
+
+//----------------------------------------------------------------------------
+//
+//  Exercise 2.5. D-Flip-Flop with Reset and Enable; clock source is 'clock', counter bit as Enable
+//
+//  Упражнение 2.5. Триггер с Reset и Enable, источник clock - 'clock', бит счетчика в качетсве Enable
+//
+//----------------------------------------------------------------------------
+
+module top_dff_w_reset_w_enable_clock_counter_enable
+(
+    input  clock,
+    input  [1:0] key,  // Кнопки
+    output [3:0] led,  // Светодиоды
+    input  [1:0] sw    // Переключатель
+);
+
+    /*
+    D - key[1]
+    Q - led[1]
+    Enable - led[0]
+    Reset - sw[0] - led[2]
+    */
+    wire d = ~ key [1];
+    wire reset_n = sw [0];
+    wire enable;
+
+    // Divide clock by 2^27
+    reg [26:0] counter;
+    always @(posedge clock or negedge reset_n)
+        if (!reset_n)
+            counter <= 0;
+        else
+            counter <= counter + 1;
+    assign enable = counter == 0;
+
+    // Internal state
+    // Внутреннее состояние D-триггера
+    reg q;
+
+    // Assignment on clock
+    always @(posedge clock or negedge reset_n)
+        if (!reset_n)
+            q <= 1'b0;
+        else if (enable)
+            q <= d;
+
+    // LEDs
+    assign led [0] = enable;
+    assign led [1] = q;
+    assign led [2] = reset_n;
 
 endmodule

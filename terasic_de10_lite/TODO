@@ -1,0 +1,14 @@
++exercise_11_gates
+exercise_12_buttons_and_letters
+tomsk - nsk - astana /home/mipsfpga/github/2016-kazakhstan/day_2_logic_design/day_2_exercise_1_display
+exercise_13_add_and_display - add different adders
+exercise_14_muxes - add ifs
+exercise_15_testbench - add using modelsim (later)
+exercise_16_counter
+exercise_17_shift_register - add both are in separate modules
+exercise_18_sound_pwm - if we have speaker
+exercise_19_fsm - add mealy from 
+  /home/mipsfpga/github/2016-kazakhstan/day_2_logic_design/day_2_exercise_3_counter_shift_fsm/boards/de0_cv
+exercise_20_pipelining - add 
+/home/mipsfpga/github/2016-kazakhstan/day_2_logic_design/day_2_quiz_5_comb_seq_pipe/src - scripts for icarus & modelsim
+hackathon_example_01_spi_light_sensor
