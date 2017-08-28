@@ -25,30 +25,6 @@ module top
     output reg [7:0] hex5
 );
 
-/*
-        'h0: seven_segments = 'b01000000;  // . a b c d e f g
-        'h1: seven_segments = 'b01111001;
-        'h2: seven_segments = 'b00100100;  //   --a--
-        'h3: seven_segments = 'b00110000;  //  |     |
-        'h4: seven_segments = 'b00011001;  //  f     b
-        S: seven_segments = 'b00010010;  //  |     |
-        'h6: seven_segments = 'b00000010;  //   --g--
-        'h7: seven_segments = 'b01111000;  //  |     |
-        'h8: seven_segments = 'b00000000;  //  e     c
-        'h9: seven_segments = 'b00011000;  //  |     |
-        'ha: seven_segments = 'b00001000;  //   --d-- 
-    parameter [9:0] A = 8'b10000100,
-                    K = 8'b11111111,
-                    L = 8'b11111111,
-                    M = 8'b11111111,
-                    N = 8'b11111111,
-                    O = 8'b11111111,
-                    S = 8'b11111111,
-                    T = 8'b11111111,
-                    Y = 8'b11111111,
-                  eps = 8'b11111111;
-                  */
-
     parameter [7:0] A = 8'b10001000,
                     K = 8'b10001001,
                     L = 8'b11000111,

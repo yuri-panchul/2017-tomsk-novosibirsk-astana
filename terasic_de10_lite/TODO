@@ -1,10 +1,14 @@
 +exercise_11_gates
 +exercise_12_buttons_and_letters
 +tomsk - nsk - astana /home/mipsfpga/github/2016-kazakhstan/day_2_logic_design/day_2_exercise_1_display
-exercise_13_add_and_display - add different adders
-exercise_14_muxes - add ifs
++exercise_13_add_and_display - add different adders
+    show carry in other hex
+    add module
+    add parametrized module
+    adders from H&H
++exercise_14_muxes - add ifs
 exercise_15_testbench - add using modelsim (later)
-exercise_16_counter
++exercise_16_counter
 +exercise_17_shift_register - add both are in separate modules
 exercise_18_sound_pwm - if we have speaker
 exercise_19_fsm - add mealy from 
