@@ -35,8 +35,7 @@ module top
     inout  [12:1] jb
 );
 
-    wire unused = ^ { ja, jb };
-
+    wire unused = ^ { ja [4:1], ja [10:7], jb [4:1], jb [10:7] };
     reg [31:0] n;
     
     always @ (posedge clk100mhz or negedge cpu_resetn)
