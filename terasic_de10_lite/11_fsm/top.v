@@ -1,222 +1,240 @@
 //----------------------------------------------------------------------------
 //
-//  Exercise   2. D-Flip-Flop
+//  Exercise   11. Finite state machine (FSM)
 //
-//  Упражнение 2. Триггер
-//
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.1. Simple D-Flip-Flop without Reset, without Enable, clock source is key[1]
-//
-//  Упражнение 2.1. Триггер без Reset и Enable, Clock - вход с кнопки
+//  Упражнение 11. Конечные автоматы
 //
 //----------------------------------------------------------------------------
 
-module top//_dff_wo_reset_wo_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [1:0] led   // Светодиоды
-);
-
-    wire clk;
-    wire d = ~ key [1];
-
-    global g (.in (~ key [0]), .out (clk));
-    
-    // Internal state 
-    // Внутреннее состояние D-триггера
-    reg q;
-    
-    // Assignment on clock
-    always @(posedge clk)
-        q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-
-endmodule
-
 //----------------------------------------------------------------------------
 //
-//  Exercise 2.2. D-Flip-Flop with Reset, without Enable; clock source is key[1]
+//  Exercise 11.1. Moore FSM
 //
-//  Упражнение 2.2. Триггер с Reset, без Enable, источник clock - key[1]
+//  Упражнение 11.1. Конечный автомат Мура
 //
 //----------------------------------------------------------------------------
 
-module top_dff_w_reset_wo_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [2:0] led,  // Светодиоды
-    input  [0:0] sw    // Переключатель
-);
-
-    wire clk;
-    wire d = ~ key [1];
-    wire reset_n = sw[0];
-
-    global g (.in (~ key [0]), .out (clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else
-            q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-            
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.3. D-Flip-Flop with Reset and Enable; clock source is key[1]
-//
-//  Упражнение 2.3. Триггер с Reset и Enable, источник clock - key[1]
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_w_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
-);
-
-    wire clk;
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable  = sw [1];
-
-    global g (.in (~ key [0]), .out (clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-    assign led [3] = enable;
-
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.4. D-Flip-Flop with Reset and Enable; clock source is counter bit 
-//
-//  Упражнение 2.4. Триггер с Reset и Enable, источник clock - бит счетчика
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_w_enable_clock_counter
+module pattern_fsm_moore
 (
     input  clock,
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
+    input  reset_n,
+    input  enable,
+    input  a,
+    output y
 );
 
-    wire one_hz_clk;
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable  = sw [1];
+    parameter [1:0] S0 = 0, S1 = 1, S2 = 2;
 
-    // Divide clock by 2^27
-    reg [26:0] counter;
+    reg [1:0] state, next_state;
+
+    // state register
+
     always @(posedge clock or negedge reset_n)
         if (!reset_n)
-            counter <= 0;
-        else
-            counter <= counter + 1;
-    global g (.in (counter[26]), .out (one_hz_clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge one_hz_clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
+            state <= S0;
         else if (enable)
-            q <= d;
+            state <= next_state;
 
-    // LEDs
-    assign led [0] = one_hz_clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-    assign led [3] = enable;
+    // next state logic
+
+    always @*
+        case (state)
+        
+        S0:
+            if (a)
+                next_state = S0;
+            else
+                next_state = S1;
+
+        S1:
+            if (a)
+                next_state = S2;
+            else
+                next_state = S1;
+
+        S2:
+            if (a)
+                next_state = S0;
+            else
+                next_state = S1;
+
+        default:
+
+            next_state = S0;
+
+        endcase
+
+    // output logic
+
+    assign y = (state == S2);
+
+endmodule
+
+module timer
+# ( parameter timer_divider = 24 )
+(
+    input clock_50_mhz,
+    input reset_n,
+    output strobe
+);
+
+    reg [timer_divider-1:0] counter;
+
+    always @(posedge clock_50_mhz or negedge reset_n)
+    begin
+        if (! reset_n)
+            counter <= { timer_divider { 1'b0 } };
+        else
+            counter <= counter + { { timer_divider-1 { 1'b0 } }, 1'b1 } ;
+    end
+
+    assign strobe = (counter [timer_divider-1:0] == { timer_divider { 1'b0 } });
+
+endmodule
+
+module shift
+# ( parameter counter_width = 10 )
+(
+    input        clock_50_mhz,
+    input        reset_n,
+    input        shift_enable,
+    input        button,
+    output reg [counter_width-1:0] shift_reg,
+    output       out
+);
+
+    reg [counter_width-1:0] counter;
+
+    always @(posedge clock_50_mhz or negedge reset_n)
+    begin
+        if (! reset_n)
+            shift_reg <= { counter_width { 1'b0 } };
+        else if (shift_enable)
+            shift_reg <= { button, shift_reg [counter_width-1:1] };
+    end
+
+    assign out = shift_reg [0];
 
 endmodule
 
 //----------------------------------------------------------------------------
 //
-//  Exercise 2.5. D-Flip-Flop with Reset and Enable; clock source is 'clock', counter bit as Enable
+//  Exercise 11.2. Mealy FSM
 //
-//  Упражнение 2.5. Триггер с Reset и Enable, источник clock - 'clock', бит счетчика в качетсве Enable
+//  Упражнение 11.2. Конечный автомат Мили
 //
 //----------------------------------------------------------------------------
 
-module top_dff_w_reset_w_enable_clock_counter_enable
+module pattern_fsm_mealy
 (
     input  clock,
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
+    input  reset_n,
+    input  enable,
+    input  a,
+    output y
 );
 
-    /*
-    D - key[1]
-    Q - led[1]
-    Enable - led[0]
-    Reset - sw[0] - led[2]
-    */
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
+    parameter S0 = 1'b0, S1 = 1'b1;
+
+    reg state, next_state;
+
+    // state register
+
+    always @(posedge clock or negedge reset_n)
+        if (!reset_n)
+            state <= S0;
+        else if (enable)
+            state <= next_state;
+
+    // next state logic
+
+    always @*
+        case (state)
+        
+        S0:
+            if (a)
+                next_state = S0;
+            else
+                next_state = S1;
+
+        S1:
+            if (a)
+                next_state = S0;
+            else
+                next_state = S1;
+
+        default:
+
+            next_state = S0;
+
+        endcase
+
+    // output logic
+
+    assign y = (a & state == S1);
+
+endmodule
+
+//----------------------------------------------------------------------------
+
+module top
+(
+    input  clock,      // Clock signal 50 Mhz   // Тактовый сигнал 50 МГц
+    input  [1:0] key,  // Buttons               // Кнопки
+    output [9:0] led,  // LEDs                  // Светодиоды
+    output [7:0] hex0, // Seven-segment display // индикатор
+    output [7:0] hex1  // Seven-segment display // индикатор
+);
+
+    wire reset_n = key [0];
+    wire button  = ! key [1];
     wire enable;
+    wire [9:0] shift_data;
+    wire shift_out;
 
-    // Divide clock by 2^27
-    reg [26:0] counter;
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            counter <= 0;
-        else
-            counter <= counter + 1;
-    assign enable = counter == 0;
+    timer
+    # ( .timer_divider ( 24 ))
+    timer_i
+    (
+        .clock_50_mhz ( clock   ),
+        .reset_n      ( reset_n ),
+        .strobe       ( enable  )
+    );
 
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
+    shift 
+    # ( .counter_width ( 10 ))
+    shift_i
+    (
+        .clock_50_mhz ( clock      ),
+        .reset_n      ( reset_n    ),
+        .shift_enable ( enable     ),
+        .button       ( button     ),
+        .shift_reg    ( shift_data ),
+        .out          ( shift_out  )
+    );
 
-    // Assignment on clock
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
+    assign led = shift_data;
 
-    // LEDs
-    assign led [0] = enable;
-    assign led [1] = q;
-    assign led [2] = reset_n;
+    pattern_fsm_moore
+    (
+        .clock   ( clock         ),
+        .reset_n ( reset_n       ),
+        .enable  ( enable        ),
+        .a       ( shift_data    ),
+        .y       ( moore_fsm_out )
+    );
+
+    pattern_fsm_mealy
+    (
+        .clock   ( clock         ),
+        .reset_n ( reset_n       ),
+        .enable  ( enable        ),
+        .a       ( shift_data    ),
+        .y       ( mealy_fsm_out )
+    );
+
+    assign hex0 = moore_fsm_out ? 8'b10100011 : 8'b11111111;
+    assign hex1 = mealy_fsm_out ? 8'b10011100 : 8'b11111111;
 
 endmodule
+

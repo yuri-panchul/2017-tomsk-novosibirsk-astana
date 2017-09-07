@@ -16,7 +16,7 @@
 
 module top_1
 (
-    input        clock, // Clock signal 12 MHz // тактовый сигнал 12 МГц
+    input        clock, // Clock signal 50 MHz // тактовый сигнал 50 МГц
     input  [1:0] key,   // Two buttons         // две кнопки
     output [9:0] led    // LEDs                // Светодиоды
 );
@@ -66,14 +66,14 @@ endmodule
 
 module timer
 (
-    input clock_12_mhz,
+    input clock_50_mhz,
     input reset_n,
     output strobe_with_period_0_35_second
 );
 
     reg [21:0] counter;
 
-    always @(posedge clock_12_mhz or negedge reset_n)
+    always @(posedge clock_50_mhz or negedge reset_n)
     begin
         if (! reset_n)
             counter <= 22'b0;
@@ -89,7 +89,7 @@ endmodule
     
 module top_2
 (
-    input        clock, // Clock signal 12 MHz // тактовый сигнал 12 МГц
+    input        clock, // Clock signal 50 MHz // тактовый сигнал 50 МГц
     input  [1:0] key,   // Two buttons         // две кнопки
     output [9:0] led    // LEDs                // Светодиоды
 );
@@ -101,7 +101,7 @@ module top_2
 
     timer timer_i
     (
-        .clock_12_mhz                   ( clock        ),
+        .clock_50_mhz                   ( clock        ),
         .reset_n                        ( reset_n      ),
         .strobe_with_period_0_35_second ( shift_enable )
     );
@@ -133,7 +133,7 @@ endmodule
 
 module shift
 (
-    input        clock_12_mhz,
+    input        clock_50_mhz,
     input        reset_n,
     input        shift_enable,
     input        button,
@@ -142,7 +142,7 @@ module shift
 
     reg [9:0] counter;
 
-    always @(posedge clock_12_mhz or negedge reset_n)
+    always @(posedge clock_50_mhz or negedge reset_n)
     begin
         if (! reset_n)
             shift_reg <= 10'b0;
@@ -156,7 +156,7 @@ endmodule
     
 module top
 (
-    input        clock, // Clock signal 12 MHz // тактовый сигнал 12 МГц
+    input        clock, // Clock signal 50 MHz // тактовый сигнал 50 МГц
     input  [1:0] key,   // Two buttons         // две кнопки
     output [9:0] led    // LEDs                // Светодиоды
 );
@@ -167,14 +167,14 @@ module top
 
     timer timer_i
     (
-        .clock_12_mhz                   ( clock        ),
+        .clock_50_mhz                   ( clock        ),
         .reset_n                        ( reset_n      ),
         .strobe_with_period_0_35_second ( shift_enable )
     );
 
     shift shift_i
     (
-        .clock_12_mhz                   ( clock        ),
+        .clock_50_mhz                   ( clock        ),
         .reset_n                        ( reset_n      ),
         .shift_enable                   ( shift_enable ),
         .button                         ( button       ),

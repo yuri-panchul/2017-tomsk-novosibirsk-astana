@@ -1,222 +1,269 @@
 //----------------------------------------------------------------------------
 //
-//  Exercise   2. D-Flip-Flop
+//  Exercise   6. Multiplexors and modules
 //
-//  Упражнение 2. Триггер
-//
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.1. Simple D-Flip-Flop without Reset, without Enable, clock source is key[1]
-//
-//  Упражнение 2.1. Триггер без Reset и Enable, Clock - вход с кнопки
+//  Упражнение 6. Мультиплексоры и модули
 //
 //----------------------------------------------------------------------------
 
-module top//_dff_wo_reset_wo_enable_key_clock
+//----------------------------------------------------------------------------
+//
+// Select one of two 2-bit elements
+//
+// Выбор одного из двух двухбитовых элементов
+//
+//----------------------------------------------------------------------------
+
+module mux_2_1
 (
-    input  [1:0] key,  // Кнопки
-    output [1:0] led   // Светодиоды
+    input  [1:0] d0,
+    input  [1:0] d1,
+    input        sel,
+    output [1:0] y
 );
 
-    wire clk;
-    wire d = ~ key [1];
+    assign y = sel ? d1 : d0;
 
-    global g (.in (~ key [0]), .out (clk));
+endmodule
+
+//----------------------------------------------------------------------------
+//
+// Select one of four 2-bit elements
+// Implementation 1 with conditional operator
+//
+// Мультиплексор, выбирающий один из четырех двухбитовых элементов
+// Реализация 1 с использованием условного оператора
+//
+//----------------------------------------------------------------------------
+
+module mux_4_1_implementation_1
+(
+    input  [1:0] d0, d1, d2, d3,
+    input  [1:0] sel,
+    output [1:0] y
+);
     
-    // Internal state 
-    // Внутреннее состояние D-триггера
-    reg q;
+    assign y = sel [1]
+        ? (sel [0] ? d3 : d2)
+        : (sel [0] ? d1 : d0);
+
+endmodule
+
+//----------------------------------------------------------------------------
+//
+// Select one of four 2-bit elements
+// Implementation 2 with case operator
+//
+// Мультиплексор, выбирающий один из четырех двухбитовых элементов
+// Реализация 2 с использованием оператора выбора case
+//
+//----------------------------------------------------------------------------
+
+module mux_4_1_implementation_2
+(
+    input      [1:0] d0, d1, d2, d3,
+    input      [1:0] sel,
+    output reg [1:0] y
+);
     
-    // Assignment on clock
-    always @(posedge clk)
-        q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.2. D-Flip-Flop with Reset, without Enable; clock source is key[1]
-//
-//  Упражнение 2.2. Триггер с Reset, без Enable, источник clock - key[1]
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_wo_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [2:0] led,  // Светодиоды
-    input  [0:0] sw    // Переключатель
-);
-
-    wire clk;
-    wire d = ~ key [1];
-    wire reset_n = sw[0];
-
-    global g (.in (~ key [0]), .out (clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else
-            q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-            
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.3. D-Flip-Flop with Reset and Enable; clock source is key[1]
-//
-//  Упражнение 2.3. Триггер с Reset и Enable, источник clock - key[1]
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_w_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
-);
-
-    wire clk;
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable  = sw [1];
-
-    global g (.in (~ key [0]), .out (clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-    assign led [3] = enable;
+    always @*
+        case (sel)
+        2'b00: y = d0;
+        2'b01: y = d1;
+        2'b10: y = d2;
+        2'b11: y = d3;
+        endcase
 
 endmodule
 
 //----------------------------------------------------------------------------
 //
-//  Exercise 2.4. D-Flip-Flop with Reset and Enable; clock source is counter bit 
+// Select one of four 2-bit elements
+// Implementation 3 using tree with three submodules with two 2-bit inputs
 //
-//  Упражнение 2.4. Триггер с Reset и Enable, источник clock - бит счетчика
+// Мультиплексор, выбирающий один из четырех двухбитовых элементов
+// Реализация 3 с помощью дерева из трех подмодулей с двумя двухбитовыми входами
 //
 //----------------------------------------------------------------------------
 
-module top_dff_w_reset_w_enable_clock_counter
+module mux_4_1_implementation_3
 (
-    input  clock,
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
+    input  [1:0] d0, d1, d2, d3,
+    input  [1:0] sel,
+    output [1:0] y
 );
 
-    wire one_hz_clk;
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable  = sw [1];
+    wire [1:0] w01, w23;
 
-    // Divide clock by 2^27
-    reg [26:0] counter;
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            counter <= 0;
-        else
-            counter <= counter + 1;
-    global g (.in (counter[26]), .out (one_hz_clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge one_hz_clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
-
-    // LEDs
-    assign led [0] = one_hz_clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-    assign led [3] = enable;
+    mux_2_1 i0 (.d0 ( d0  ), .d1 ( d1  ), .sel ( sel [0] ), .y ( w01 ));
+    mux_2_1 i1 (.d0 ( d2  ), .d1 ( d3  ), .sel ( sel [0] ), .y ( w23 ));
+    mux_2_1 i2 (.d0 ( w01 ), .d1 ( w23 ), .sel ( sel [1] ), .y ( y   ));
 
 endmodule
 
 //----------------------------------------------------------------------------
 //
-//  Exercise 2.5. D-Flip-Flop with Reset and Enable; clock source is 'clock', counter bit as Enable
+// Select one of four 1-bit elements
 //
-//  Упражнение 2.5. Триггер с Reset и Enable, источник clock - 'clock', бит счетчика в качетсве Enable
+// Мультиплексор, выбирающий один из четырех однобитовых элементов
 //
 //----------------------------------------------------------------------------
 
-module top_dff_w_reset_w_enable_clock_counter_enable
+module mux_4_1_bits_1
 (
-    input  clock,
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
+    input        d0, d1, d2, d3,
+    input  [1:0] sel,
+    output       y
 );
 
-    /*
-    D - key[1]
-    Q - led[1]
-    Enable - led[0]
-    Reset - sw[0] - led[2]
-    */
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable;
+    assign y = sel [1]
+        ? (sel [0] ? d3 : d2)
+        : (sel [0] ? d1 : d0);
 
-    // Divide clock by 2^27
-    reg [26:0] counter;
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            counter <= 0;
-        else
-            counter <= counter + 1;
-    assign enable = counter == 0;
+endmodule
 
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
+//----------------------------------------------------------------------------
+//
+// Select one of four 2-bit elements
+// Implementation 4 using two submodules with four 1-bit inputs
+//
+// Мультиплексор, выбирающий один из четырех двухбитовых элементов
+// Реализация 4 с помощью двух подмодулей с четырьмя однобитовыми входами
+//
+//----------------------------------------------------------------------------
 
-    // Assignment on clock
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
+module mux_4_1_implementation_4
+(
+    input  [1:0] d0, d1, d2, d3,
+    input  [1:0] sel,
+    output [1:0] y
+);
 
-    // LEDs
-    assign led [0] = enable;
-    assign led [1] = q;
-    assign led [2] = reset_n;
+    mux_4_1_bits_1 high
+    (
+        .d0  ( d0 [1] ),
+        .d1  ( d1 [1] ),
+        .d2  ( d2 [1] ),
+        .d3  ( d3 [1] ),
+        .sel ( sel    ),
+        .y   ( y  [1] )
+    );
+
+    mux_4_1_bits_1 low
+    (
+        .d0  ( d0 [0] ),
+        .d1  ( d1 [0] ),
+        .d2  ( d2 [0] ),
+        .d3  ( d3 [0] ),
+        .sel ( sel    ),
+        .y   ( y  [0] )
+    );
+
+endmodule
+
+//----------------------------------------------------------------------------
+//
+// Select one of four 2-bit elements
+// Implementation 5 using if statements
+//
+// Мультиплексор, выбирающий один из четырех однобитовых элементов
+// Реализация 5 с помощью оператора 'if'
+//
+//----------------------------------------------------------------------------
+
+module mux_4_1_implementation_5
+(
+    input      [1:0] d0, d1, d2, d3,
+    input      [1:0] sel,
+    output reg [1:0] y
+);
+
+    always @*
+    begin
+        if (sel == 2'b00)
+            y = d0;
+        else if (sel == 2'b01)
+            y = d1;
+        else if (sel == 2'b10)
+            y = d2;
+        else if (sel == 2'b11)
+            y = d3;
+    end
+
+endmodule
+
+//----------------------------------------------------------------------------
+//
+// Top module which sets up five multiplexor implementations
+//
+// Верхний модуль, который устанавливает пять вариантов реализации мультиплексора
+//
+//----------------------------------------------------------------------------
+
+module top
+(
+    input  [7:0] sw,  // Switches // Переключатели
+    input  [1:0] key, // Buttons  // Две кнопки
+    output [9:0] led  // LEDs     // Светодиоды
+);
+
+    wire [1:0] d0 = sw [1:0];
+    wire [1:0] d1 = sw [3:2];
+    wire [1:0] d2 = sw [5:4];
+    wire [1:0] d3 = sw [7:6];
+
+    wire [1:0] y0, y1, y2, y3, y4;
+
+    assign led = { y4, y3, y2, y1, y0 };
+
+    mux_4_1_implementation_1 mux_4_1_i1
+    (
+        .d0  ( d0  ),
+        .d1  ( d1  ),
+        .d2  ( d2  ),
+        .d3  ( d3  ),
+        .sel ( key ),
+        .y   ( y0  )
+    );
+
+    mux_4_1_implementation_2 mux_4_1_i2
+    (
+        .d0  ( d0  ),
+        .d1  ( d1  ),
+        .d2  ( d2  ),
+        .d3  ( d3  ),
+        .sel ( key ),
+        .y   ( y1  )
+    );
+
+    mux_4_1_implementation_3
+    (
+        .d0  ( d0  ),
+        .d1  ( d1  ),
+        .d2  ( d2  ),
+        .d3  ( d3  ),
+        .sel ( key ),
+        .y   ( y2  )
+    );
+
+    mux_4_1_implementation_4
+    (
+        .d0  ( d0  ),
+        .d1  ( d1  ),
+        .d2  ( d2  ),
+        .d3  ( d3  ),
+        .sel ( key ),
+        .y   ( y3  )
+    );
+
+    mux_4_1_implementation_5
+    (
+        .d0  ( d0  ),
+        .d1  ( d1  ),
+        .d2  ( d2  ),
+        .d3  ( d3  ),
+        .sel ( key ),
+        .y   ( y4  )
+    );
 
 endmodule

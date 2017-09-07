@@ -1,222 +1,172 @@
 //----------------------------------------------------------------------------
 //
-//  Exercise   2. D-Flip-Flop
+//  Exercise   8. Counter
 //
-//  Упражнение 2. Триггер
-//
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.1. Simple D-Flip-Flop without Reset, without Enable, clock source is key[1]
-//
-//  Упражнение 2.1. Триггер без Reset и Enable, Clock - вход с кнопки
+//  Упражнение 8. Счетчик
 //
 //----------------------------------------------------------------------------
 
-module top//_dff_wo_reset_wo_enable_key_clock
+//----------------------------------------------------------------------------
+//
+//  Exercise 8.1. All components in one module
+//
+//  Упражнение 8.1. Все компоненты в одном модуле
+//
+//----------------------------------------------------------------------------
+
+module top_1
 (
-    input  [1:0] key,  // Кнопки
-    output [1:0] led   // Светодиоды
+    input        clock, // Clock signal 50 MHz // Тактовый сигнал 50 МГц
+    input  [0:0] key,   // Button // Кнопка
+    output [7:0] hex0   // Seven-segment display // индикатор
 );
 
-    wire clk;
-    wire d = ~ key [1];
+    wire reset_n = key[0];
 
-    global g (.in (~ key [0]), .out (clk));
-    
-    // Internal state 
-    // Внутреннее состояние D-триггера
-    reg q;
-    
-    // Assignment on clock
-    always @(posedge clk)
-        q <= d;
+    reg [29:0] counter;
 
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.2. D-Flip-Flop with Reset, without Enable; clock source is key[1]
-//
-//  Упражнение 2.2. Триггер с Reset, без Enable, источник clock - key[1]
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_wo_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [2:0] led,  // Светодиоды
-    input  [0:0] sw    // Переключатель
-);
-
-    wire clk;
-    wire d = ~ key [1];
-    wire reset_n = sw[0];
-
-    global g (.in (~ key [0]), .out (clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else
-            q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-            
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.3. D-Flip-Flop with Reset and Enable; clock source is key[1]
-//
-//  Упражнение 2.3. Триггер с Reset и Enable, источник clock - key[1]
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_w_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
-);
-
-    wire clk;
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable  = sw [1];
-
-    global g (.in (~ key [0]), .out (clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-    assign led [3] = enable;
-
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.4. D-Flip-Flop with Reset and Enable; clock source is counter bit 
-//
-//  Упражнение 2.4. Триггер с Reset и Enable, источник clock - бит счетчика
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_w_enable_clock_counter
-(
-    input  clock,
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
-);
-
-    wire one_hz_clk;
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable  = sw [1];
-
-    // Divide clock by 2^27
-    reg [26:0] counter;
     always @(posedge clock or negedge reset_n)
+    begin
         if (!reset_n)
-            counter <= 0;
+            counter <= 30'b0;
         else
-            counter <= counter + 1;
-    global g (.in (counter[26]), .out (one_hz_clk));
+            counter <= counter + 30'b1;
+    end
 
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
+    wire [3:0] number = counter [29:26];
 
-    // Assignment on clock
-    always @(posedge one_hz_clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
+    // a b c d e f g .   // Letter from scheme below
+    // 0 1 2 3 4 5 6 7   // Bit in hex0
 
-    // LEDs
-    assign led [0] = one_hz_clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-    assign led [3] = enable;
+    //   --a--
+    //  |     |
+    //  f     b
+    //  |     |
+    //   --g--
+    //  |     |
+    //  e     c
+    //  |     |
+    //   --d-- 
+
+    reg [6:0] abcdefg;
+
+    always @*
+        case (number)
+        4'h0: abcdefg = 7'b1000000;
+        4'h1: abcdefg = 7'b1111001;
+        4'h2: abcdefg = 7'b0100100;
+        4'h3: abcdefg = 7'b0110000;
+        4'h4: abcdefg = 7'b0011001;
+        4'h5: abcdefg = 7'b0010010;
+        4'h6: abcdefg = 7'b0000010;
+        4'h7: abcdefg = 7'b1111000;
+        4'h8: abcdefg = 7'b0000000;
+        4'h9: abcdefg = 7'b0010000;
+        4'ha: abcdefg = 7'b0001000;
+        4'hb: abcdefg = 7'b0000011;
+        4'hc: abcdefg = 7'b1000110;
+        4'hd: abcdefg = 7'b0100001;
+        4'he: abcdefg = 7'b0000110;
+        4'hf: abcdefg = 7'b0001110;
+        endcase
+
+    assign hex0[7:0] = { 1'b1, abcdefg };
 
 endmodule
 
 //----------------------------------------------------------------------------
 //
-//  Exercise 2.5. D-Flip-Flop with Reset and Enable; clock source is 'clock', counter bit as Enable
+//  Exercise 8.2. With modules
 //
-//  Упражнение 2.5. Триггер с Reset и Enable, источник clock - 'clock', бит счетчика в качетсве Enable
+//  Упражнение 8.2. С модульной иерархией
 //
 //----------------------------------------------------------------------------
 
-module top_dff_w_reset_w_enable_clock_counter_enable
+module counter
 (
-    input  clock,
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
+    input             clock,
+    input             reset_n,
+    output reg [31:0] count
 );
 
-    /*
-    D - key[1]
-    Q - led[1]
-    Enable - led[0]
-    Reset - sw[0] - led[2]
-    */
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable;
-
-    // Divide clock by 2^27
-    reg [26:0] counter;
     always @(posedge clock or negedge reset_n)
+    begin
         if (!reset_n)
-            counter <= 0;
+            count <= 32'b0;
         else
-            counter <= counter + 1;
-    assign enable = counter == 0;
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
-
-    // LEDs
-    assign led [0] = enable;
-    assign led [1] = q;
-    assign led [2] = reset_n;
+            count <= count + 32'b1;
+    end
 
 endmodule
+
+//----------------------------------------------------------------------------
+
+module seven_segment_display_driver
+(
+    input      [3:0] number,
+    output reg [6:0] abcdefg
+);
+
+    // a b c d e f g .   // Letter from scheme below
+    // 0 1 2 3 4 5 6 7   // Bit in hex0
+
+    //   --a--
+    //  |     |
+    //  f     b
+    //  |     |
+    //   --g--
+    //  |     |
+    //  e     c
+    //  |     |
+    //   --d-- 
+
+    always @*
+        case (number)
+        4'h0: abcdefg = 7'b1000000;
+        4'h1: abcdefg = 7'b1111001;
+        4'h2: abcdefg = 7'b0100100;
+        4'h3: abcdefg = 7'b0110000;
+        4'h4: abcdefg = 7'b0011001;
+        4'h5: abcdefg = 7'b0010010;
+        4'h6: abcdefg = 7'b0000010;
+        4'h7: abcdefg = 7'b1111000;
+        4'h8: abcdefg = 7'b0000000;
+        4'h9: abcdefg = 7'b0010000;
+        4'ha: abcdefg = 7'b0001000;
+        4'hb: abcdefg = 7'b0000011;
+        4'hc: abcdefg = 7'b1000110;
+        4'hd: abcdefg = 7'b0100001;
+        4'he: abcdefg = 7'b0000110;
+        4'hf: abcdefg = 7'b0001110;
+        endcase
+
+endmodule
+
+module top
+(
+    input        clock, // Clock signal 50 MHz // Тактовый сигнал 50 МГц
+    input  [0:0] key,   // Button // Кнопка
+    output [7:0] hex0   // Seven-segment display // индикатор
+);
+
+    wire reset_n = key[0];
+
+    wire [31:0] counter;
+
+    counter counter_i
+    (
+        .clock   ( clock ),
+        .reset_n ( reset_n ),
+        .count   ( counter )
+    );
+
+    seven_segment_display_driver display_driver_i
+    (
+        .number  ( counter [29:26] ),
+        .abcdefg ( hex0 [6:0]      )
+    );
+
+    assign hex0[7] = 1'b1;
+
+endmodule
+
