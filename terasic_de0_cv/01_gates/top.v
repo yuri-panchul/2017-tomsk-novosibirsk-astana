@@ -16,7 +16,7 @@
 
 module top
 (
-    input  [1:0] key,  // Кнопки
+    input  [3:0] key,  // Кнопки
     output [9:0] led   // Светодиоды
 );
 
@@ -73,7 +73,7 @@ endmodule
 
 module top_2
 (
-    input      [1:0] key,
+    input      [3:0] key,
     output reg [9:0] led
 );
 
@@ -111,7 +111,7 @@ endmodule
 
 module top_3
 (
-    input  [1:0] key,
+    input  [3:0] key,
     output [9:0] led
 );
 

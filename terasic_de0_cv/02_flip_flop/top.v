@@ -1,20 +1,22 @@
 //----------------------------------------------------------------------------
 //
-//  Exercise   2. D-Flip-Flop
+//  Exercise   2. D flip-flop
 //
-//  Упражнение 2. Триггер
-//
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.1. Simple D-Flip-Flop without Reset, without Enable, clock source is key[1]
-//
-//  Упражнение 2.1. Триггер без Reset и Enable, Clock - вход с кнопки
+//  Упражнение 2. D-триггер
 //
 //----------------------------------------------------------------------------
 
-module top//_dff_wo_reset_wo_enable_key_clock
+//----------------------------------------------------------------------------
+//
+//  Exercise 2.1. D flip-flop without reset and enable.
+//  Clock source is key [0], data is sampled from key [1].
+//
+//  Упражнение 2.1. D-триггер без сигналов сброса и разрешения.
+//  Тактовый сигнал подается с кнопки key [0], данные считываются с key [1]
+//
+//----------------------------------------------------------------------------
+
+module top  // _dff_wo_reset_wo_enable_clock_from_key
 (
     input  [1:0] key,  // Кнопки
     output [1:0] led   // Светодиоды
@@ -25,15 +27,24 @@ module top//_dff_wo_reset_wo_enable_key_clock
 
     global g (.in (~ key [0]), .out (clk));
     
-    // Internal state 
+    // D flip-flop internal state 
     // Внутреннее состояние D-триггера
+
     reg q;
+
+    // Store new data on positive front of the clock
     
-    // Assignment on clock
-    always @(posedge clk)
+    // Записать новые данные в момент
+    // положительного фронта сигнала тактовой частоты
+    
+    always @ (posedge clk)
         q <= d;
 
-    // LEDs
+    // Show the value of the clock and D-flip-flop output on LEDs
+    
+    // Вывести значение сигналов тактовой частоты
+    // и вывода D-триггера на светодиоды
+
     assign led [0] = clk;
     assign led [1] = q;
 
