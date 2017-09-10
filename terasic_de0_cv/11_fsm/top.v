@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------
 //
-//  Exercise   11. Finite state machine (FSM)
+//  Exercise   11. Finite state machines (FSMs)
 //
 //  Упражнение 11. Конечные автоматы
 //
@@ -8,7 +8,7 @@
 
 //----------------------------------------------------------------------------
 //
-//  Exercise 11.1. Moore FSM
+//  Exercise   11.1. Moore FSM
 //
 //  Упражнение 11.1. Конечный автомат Мура
 //
@@ -27,15 +27,17 @@ module pattern_fsm_moore
 
     reg [1:0] state, next_state;
 
-    // state register
+    // State register
+    // Регистр состояния
 
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
+    always @ (posedge clock or negedge reset_n)
+        if (! reset_n)
             state <= S0;
         else if (enable)
             state <= next_state;
 
-    // next state logic
+    // Next state logic
+    // Логика определения следующего состояния
 
     always @*
         case (state)
@@ -64,7 +66,8 @@ module pattern_fsm_moore
 
         endcase
 
-    // output logic
+    // Output logic based on current state
+    // Логика определения выводов на основе текущего состояния
 
     assign y = (state == S2);
 
@@ -73,44 +76,45 @@ endmodule
 module timer
 # ( parameter timer_divider = 24 )
 (
-    input clock_50_mhz,
-    input reset_n,
+    input  clock_50_mhz,
+    input  reset_n,
     output strobe
 );
 
-    reg [timer_divider-1:0] counter;
+    reg [timer_divider - 1:0] counter;
 
-    always @(posedge clock_50_mhz or negedge reset_n)
+    always @ (posedge clock_50_mhz or negedge reset_n)
     begin
         if (! reset_n)
             counter <= { timer_divider { 1'b0 } };
         else
-            counter <= counter + { { timer_divider-1 { 1'b0 } }, 1'b1 } ;
+            counter <= counter + { { timer_divider - 1 { 1'b0 } }, 1'b1 };
     end
 
-    assign strobe = (counter [timer_divider-1:0] == { timer_divider { 1'b0 } });
+    assign strobe
+        = (counter [timer_divider - 1:0] == { timer_divider { 1'b0 } } );
 
 endmodule
 
 module shift
-# ( parameter counter_width = 10 )
+# ( parameter width = 10 )
 (
-    input        clock_50_mhz,
-    input        reset_n,
-    input        shift_enable,
-    input        button,
-    output reg [counter_width-1:0] shift_reg,
-    output       out
+    input                     clock,
+    input                     reset_n,
+    input                     shift_enable,
+    input                     button,
+    output reg [width - 1:0]  shift_reg,
+    output                    out
 );
 
-    reg [counter_width-1:0] counter;
+    reg [width - 1:0] counter;
 
-    always @(posedge clock_50_mhz or negedge reset_n)
+    always @ (posedge clock or negedge reset_n)
     begin
         if (! reset_n)
-            shift_reg <= { counter_width { 1'b0 } };
+            shift_reg <= { width { 1'b0 } };
         else if (shift_enable)
-            shift_reg <= { button, shift_reg [counter_width-1:1] };
+            shift_reg <= { button, shift_reg [width - 1:1] };
     end
 
     assign out = shift_reg [0];
@@ -119,7 +123,7 @@ endmodule
 
 //----------------------------------------------------------------------------
 //
-//  Exercise 11.2. Mealy FSM
+//  Exercise   11.2. Mealy FSM
 //
 //  Упражнение 11.2. Конечный автомат Мили
 //
@@ -134,19 +138,21 @@ module pattern_fsm_mealy
     output y
 );
 
-    parameter S0 = 1'b0, S1 = 1'b1;
+    parameter [0:0] S0 = 1'b0, S1 = 1'b1;
 
     reg state, next_state;
 
-    // state register
+    // State register
+    // Регистр состояния
 
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
+    always @ (posedge clock or negedge reset_n)
+        if (! reset_n)
             state <= S0;
         else if (enable)
             state <= next_state;
 
-    // next state logic
+    // Next state logic
+    // Логика определения следующего состояния
 
     always @*
         case (state)
@@ -169,7 +175,8 @@ module pattern_fsm_mealy
 
         endcase
 
-    // output logic
+    // Output logic based on current state
+    // Логика определения выводов на основе текущего состояния и вводах
 
     assign y = (a & state == S1);
 
@@ -179,18 +186,23 @@ endmodule
 
 module top
 (
-    input  clock,      // Clock signal 50 Mhz   // Тактовый сигнал 50 МГц
-    input  [1:0] key,  // Buttons               // Кнопки
-    output [9:0] led,  // LEDs                  // Светодиоды
-    output [7:0] hex0, // Seven-segment display // индикатор
-    output [7:0] hex1  // Seven-segment display // индикатор
+    input        clock,    // Clock signal 50 MHz  // Тактовый сигнал 50 МГц
+    input        reset_n,  // Reset active low     // Сброс с активным
+                                                   // низким уровнем
+    input  [3:0] key,      // Four buttons         // Четыре кнопки
+    output [9:0] led,      // LEDs                 // Светодиоды
+    output [6:0] hex0,     // 7-segment display    // Семисегментный индикатор
+    output [6:0] hex1,     
+    output [6:0] hex2,
+    output [6:0] hex3,
+    output [6:0] hex4,
+    output [6:0] hex5
 );
 
-    wire reset_n = key [0];
-    wire button  = ! key [1];
-    wire enable;
+    wire       button  = ~ key [0];
+    wire       enable;
     wire [9:0] shift_data;
-    wire shift_out;
+    wire       shift_out;
 
     timer
     # ( .timer_divider ( 24 ))
@@ -202,10 +214,10 @@ module top
     );
 
     shift 
-    # ( .counter_width ( 10 ))
+    # ( .width ( 10 ))
     shift_i
     (
-        .clock_50_mhz ( clock      ),
+        .clock        ( clock      ),
         .reset_n      ( reset_n    ),
         .shift_enable ( enable     ),
         .button       ( button     ),
@@ -220,7 +232,7 @@ module top
         .clock   ( clock         ),
         .reset_n ( reset_n       ),
         .enable  ( enable        ),
-        .a       ( shift_data    ),
+        .a       ( shift_out     ),
         .y       ( moore_fsm_out )
     );
 
@@ -229,7 +241,7 @@ module top
         .clock   ( clock         ),
         .reset_n ( reset_n       ),
         .enable  ( enable        ),
-        .a       ( shift_data    ),
+        .a       ( shift_out     ),
         .y       ( mealy_fsm_out )
     );
 
@@ -237,4 +249,3 @@ module top
     assign hex1 = mealy_fsm_out ? 8'b10011100 : 8'b11111111;
 
 endmodule
-

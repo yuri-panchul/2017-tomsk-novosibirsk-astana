@@ -14,7 +14,7 @@
 //
 //----------------------------------------------------------------------------
 
-module top_1
+module top
 (
     input        clock,    // Clock signal 50 MHz  // Тактовый сигнал 50 МГц
     input        reset_n,  // Reset active low     // Сброс с активным
@@ -147,7 +147,7 @@ module shift
 
     reg [9:0] counter;
 
-    always @ (posedge clock_50_mhz or negedge reset_n)
+    always @ (posedge clock or negedge reset_n)
     begin
         if (! reset_n)
             shift_reg <= 10'b0;
@@ -159,11 +159,13 @@ endmodule
 
 //--------------------------------------------------------------------
     
-module top
+module top_3
 (
-    input        clock, // Clock signal 50 MHz // тактовый сигнал 50 МГц
-    input  [1:0] key,   // Two buttons         // две кнопки
-    output [9:0] led    // LEDs                // Светодиоды
+    input        clock,    // Clock signal 50 MHz  // Тактовый сигнал 50 МГц
+    input        reset_n,  // Reset active low     // Сброс с активным
+                                                   // низким уровнем
+    input  [3:0] key,      // Four buttons         // Четыре кнопки
+    output [9:0] led       // LEDs                 // Светодиоды
 );
 
     wire button = ~ key [0];
