@@ -1,222 +1,122 @@
 //----------------------------------------------------------------------------
 //
-//  Exercise   2. D-Flip-Flop
+//  Упражнение 10: Генерация звуков До-Ми-Соль и зуммера
 //
-//  Упражнение 2. Триггер
-//
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.1. Simple D-Flip-Flop without Reset, without Enable, clock source is key[1]
-//
-//  Упражнение 2.1. Триггер без Reset и Enable, Clock - вход с кнопки
+//  Exercise   10: Sound generator, C4-E4-G4 and bazzer
 //
 //----------------------------------------------------------------------------
 
-module top//_dff_wo_reset_wo_enable_key_clock
+module frequency_generator
+#
 (
-    input  [1:0] key,  // Кнопки
-    output [1:0] led   // Светодиоды
+    parameter clock_frequency          = 50000000,  // 50 MHz
+              output_frequency_mul_100 = 26163      // Частота ноты До   первой октавы * 100
+                                                    // C4 frequency * 100
+)
+(
+    input      clock,
+    input      reset_n,
+    output reg out
 );
 
-    wire clk;
-    wire d = ~ key [1];
+    parameter [31:0] period_in_cycles
+        = clock_frequency * 100 / output_frequency_mul_100;
 
-    global g (.in (~ key [0]), .out (clk));
+    reg [15:0] counter;
+
+    always @(posedge clock or negedge reset_n)
+    begin
+        if (! reset_n)
+        begin
+            counter <= 16'b0;
+            out     <= 1'b0;
+        end
+        else
+        begin
+            if (counter == period_in_cycles / 2 - 1)
+            begin
+                out     <= ! out;
+                counter <= 16'b0;
+            end
+            else
+            begin
+                counter <= counter + 16'b1;
+            end
+        end
+    end
+
+endmodule
+
+
+module top
+(
+    input         clock,
+    input         reset_n,
+    input  [ 3:0] key,
+    input  [ 9:0] sw,
+    output [ 9:0] led,
+    output [ 6:0] hex0,
+    output [ 6:0] hex1,
+    output [ 6:0] hex2,
+    output [ 6:0] hex3,
+    output [ 6:0] hex4,
+    output [ 6:0] hex5,
+    inout  [35:0] gpio_0,
+    inout  [35:0] gpio_1
+);
+
+    parameter clock_frequency      = 50000000;
+
+    parameter frequency_c4_mul_100 = 26163,  // Частота ноты До первой октавы * 100
+                                             // C4 frequency * 100
+                                             
+              frequency_e4_mul_100 = 32963,  // Частота ноты Ми первой октавы * 100
+                                             // E4 frequency * 100
+                                             
+              frequency_g4_mul_100 = 39200;  // Частота ноты Соль первой октавы * 100
+                                             // G4 frequency * 100
     
-    // Internal state 
-    // Внутреннее состояние D-триггера
-    reg q;
-    
-    // Assignment on clock
-    always @(posedge clk)
-        q <= d;
+    wire button_c4 = ~ key [3];
+    wire button_e4 = ~ key [2];
+    wire button_g4 = ~ key [1];
+    wire buzzer    = ~ key [0];
 
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
+    wire note_c4, note_e4, note_g4;
 
-endmodule
+    frequency_generator
+    # (
+        .clock_frequency          ( clock_frequency      ),
+        .output_frequency_mul_100 ( frequency_c4_mul_100 )
+    )
+    (
+        .clock   ( clock     ),
+        .reset_n ( button_c4 ),
+        .out     ( note_c4   )
+    );
 
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.2. D-Flip-Flop with Reset, without Enable; clock source is key[1]
-//
-//  Упражнение 2.2. Триггер с Reset, без Enable, источник clock - key[1]
-//
-//----------------------------------------------------------------------------
+    frequency_generator
+    # (
+        .clock_frequency          ( clock_frequency      ),
+        .output_frequency_mul_100 ( frequency_e4_mul_100 )
+    )
+    (
+        .clock   ( clock     ),
+        .reset_n ( button_e4 ),
+        .out     ( note_e4   )
+    );
 
-module top_dff_w_reset_wo_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [2:0] led,  // Светодиоды
-    input  [0:0] sw    // Переключатель
-);
+    frequency_generator
+    # (
+        .clock_frequency          ( clock_frequency      ),
+        .output_frequency_mul_100 ( frequency_g4_mul_100 )
+    )
+    (
+        .clock   ( clock     ),
+        .reset_n ( button_g4 ),
+        .out     ( note_g4   )
+    );
 
-    wire clk;
-    wire d = ~ key [1];
-    wire reset_n = sw[0];
-
-    global g (.in (~ key [0]), .out (clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else
-            q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-            
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.3. D-Flip-Flop with Reset and Enable; clock source is key[1]
-//
-//  Упражнение 2.3. Триггер с Reset и Enable, источник clock - key[1]
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_w_enable_key_clock
-(
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
-);
-
-    wire clk;
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable  = sw [1];
-
-    global g (.in (~ key [0]), .out (clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
-
-    // LEDs
-    assign led [0] = clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-    assign led [3] = enable;
-
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.4. D-Flip-Flop with Reset and Enable; clock source is counter bit 
-//
-//  Упражнение 2.4. Триггер с Reset и Enable, источник clock - бит счетчика
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_w_enable_clock_counter
-(
-    input  clock,
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
-);
-
-    wire one_hz_clk;
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable  = sw [1];
-
-    // Divide clock by 2^27
-    reg [26:0] counter;
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            counter <= 0;
-        else
-            counter <= counter + 1;
-    global g (.in (counter[26]), .out (one_hz_clk));
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge one_hz_clk or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
-
-    // LEDs
-    assign led [0] = one_hz_clk;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-    assign led [3] = enable;
-
-endmodule
-
-//----------------------------------------------------------------------------
-//
-//  Exercise 2.5. D-Flip-Flop with Reset and Enable; clock source is 'clock', counter bit as Enable
-//
-//  Упражнение 2.5. Триггер с Reset и Enable, источник clock - 'clock', бит счетчика в качетсве Enable
-//
-//----------------------------------------------------------------------------
-
-module top_dff_w_reset_w_enable_clock_counter_enable
-(
-    input  clock,
-    input  [1:0] key,  // Кнопки
-    output [3:0] led,  // Светодиоды
-    input  [1:0] sw    // Переключатель
-);
-
-    /*
-    D - key[1]
-    Q - led[1]
-    Enable - led[0]
-    Reset - sw[0] - led[2]
-    */
-    wire d = ~ key [1];
-    wire reset_n = sw [0];
-    wire enable;
-
-    // Divide clock by 2^27
-    reg [26:0] counter;
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            counter <= 0;
-        else
-            counter <= counter + 1;
-    assign enable = counter == 0;
-
-    // Internal state
-    // Внутреннее состояние D-триггера
-    reg q;
-
-    // Assignment on clock
-    always @(posedge clock or negedge reset_n)
-        if (!reset_n)
-            q <= 1'b0;
-        else if (enable)
-            q <= d;
-
-    // LEDs
-    assign led [0] = enable;
-    assign led [1] = q;
-    assign led [2] = reset_n;
-
+    assign gpio_1 [35] = note_c4 | note_e4 | note_g4;
+    assign gpio_1 [ 1] = buzzer;
+                 
 endmodule
