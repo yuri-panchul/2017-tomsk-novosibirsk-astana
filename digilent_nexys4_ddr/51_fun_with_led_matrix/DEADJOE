@@ -1,3 +1,8 @@
+
+*** These modified files were found in JOE when it aborted on Thu Sep 14 19:20:11 2017
+*** JOE was aborted because the terminal closed
+
+*** File '/home/training/github/2017-tomsk-novosibirsk-astana/digilent_nexys4_ddr/51_fun_with_led_matrix/top_1.sv'
 //----------------------------------------------------------------------------
 //
 //  Упражнение 51: Матрица светодиодов
@@ -120,7 +125,7 @@ module top_1
     # ( .timer_divider ( 25 ))
     timer_rows_i
     (
-        .clock_100_mhz ( clk       ),
+        .clock_100_mhz ( clk         ),
         .reset_n       ( reset_n     ),
         .strobe        ( enable_rows )
     );
@@ -129,7 +134,7 @@ module top_1
     # ( .width ( 8 ))
     shift_rows_i
     (
-        .clock         ( clk       ),
+        .clock         ( clk         ),
         .reset_n       ( reset_n     ),
         .shift_enable  ( enable_rows ),
         .button        ( button      ),
@@ -142,7 +147,7 @@ module top_1
     # ( .timer_divider ( 25 ))
     timer_cols_i
     (
-        .clock_100_mhz ( clk       ),
+        .clock_100_mhz ( clk         ),
         .reset_n       ( reset_n     ),
         .strobe        ( enable_cols )
     );
@@ -151,7 +156,7 @@ module top_1
     # ( .width ( 8 ))
     shift_cols_i
     (
-        .clock         ( clk       ),
+        .clock         ( clk         ),
         .reset_n       ( reset_n     ),
         .shift_enable  ( enable_cols ),
         .button        ( button      ),
@@ -159,3 +164,48 @@ module top_1
     );
 
 endmodule
+
+*** File '(Unnamed)'
+echo
+/
+.sh
+rm -f 
+/
+    
+../
+[3:0]
+width
+cols
+clk
+
+*** File '(Unnamed)'
+del
+\\
+\t
+tkdiff 
+shift
+shift
+[1:0]
+counter_width
+\t
+rows
+clock
+
+*** File '(Unnamed)'
+/home/training/github/2017-tomsk-novosibirsk-astana/terasic_de0_cv/14_led_matrix/top.v
+/home/training/github/2017-tomsk-novosibirsk-astana/terasic_de0_cv/14_led_matrix/top.v
+/home/training/github/2017-tomsk-novosibirsk-astana/terasic_de0_cv/14_led_matrix/top.v
+/home/training/github/2017-tomsk-novosibirsk-astana/.git/COMMIT_EDITMSG
+/home/training/github/2017-tomsk-novosibirsk-astana/digilent_nexys4_ddr/51_fun_with_led_matrix/top_1.sv
+/home/training/github/gitt
+/home/training/github/2017-tomsk-novosibirsk-astana/digilent_nexys4_ddr/51_fun_with_led_matrix/top.v
+top_1.sv
+* Startup Log *
+* Shell 2 *
+/home/training/github/2017-tomsk-novosibirsk-astana/digilent_nexys4_ddr/51_fun_with_led_matrix/top_1.sv
+
+*** File '* Startup Log *'
+Processing '/home/training/.joerc'...
+Processing '/etc/joe/ftyperc'...
+Finished processing /etc/joe/ftyperc
+Finished processing /home/training/.joerc
