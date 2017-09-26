@@ -1,0 +1,15 @@
+#!/bin/bash
+
+rm -rf sim
+mkdir sim
+cd sim
+
+ncverilog  \
+    -Q +access+r +incdir+..  \
+    +nclog_ncsim+../log_rtl.log  \
+    ../alu.v ../stack.v ../calculator.v ../testbench.v
+
+ncverilog  \
+    -Q +access+r +incdir+..  \
+    +nclog_ncsim+../log_behavioral.log  \
+    ../calculator_behavioral.v ../testbench.v
