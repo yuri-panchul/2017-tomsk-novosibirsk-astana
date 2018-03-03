@@ -15,9 +15,7 @@ module tb;
     reg                down_ready;
 
     top
-    `ifndef GATE_LEVEL   
     #(.width (width))
-    `endif
     top_inst (.*);
 
     initial
